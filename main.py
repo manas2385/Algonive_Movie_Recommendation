@@ -1,27 +1,27 @@
 import pandas as pd
 import ast
 
-# Load datasets
+#Load datasets
 movies = pd.read_csv('data/tmdb_5000_movies.csv')
 credits = pd.read_csv('data/tmdb_5000_credits.csv')
 
-# Merge
+#Merge
 movies = movies.merge(credits, on='title')
 
-# Select needed columns
+#Select needed columns
 movies = movies[['movie_id','title','overview','genres','keywords','cast','crew']]
 
-# Remove null values
+#Remove null values
 movies.dropna(inplace=True)
 
-# Convert stringified JSON to list
+#Convert stringified JSON to list
 def convert(text):
     return [i['name'] for i in ast.literal_eval(text)]
 
 movies['genres'] = movies['genres'].apply(convert)
 movies['keywords'] = movies['keywords'].apply(convert)
 
-# Get top 3 cast
+#Get top 3 cast
 def convert_cast(text):
     L = []
     for i in ast.literal_eval(text)[:3]:
@@ -30,7 +30,7 @@ def convert_cast(text):
 
 movies['cast'] = movies['cast'].apply(convert_cast)
 
-# Get director
+#Get director
 def fetch_director(text):
     for i in ast.literal_eval(text):
         if i['job'] == 'Director':
@@ -39,13 +39,13 @@ def fetch_director(text):
 
 movies['crew'] = movies['crew'].apply(fetch_director)
 
-# Combine all features into tags
+#Combine all features into tags
 movies['tags'] = movies['overview'] + " " + movies['genres'].astype(str) + " " + movies['keywords'].astype(str) + " " + movies['cast'].astype(str) + " " + movies['crew']
 
-# Keep final columns
+#Keep final columns
 new_df = movies[['movie_id','title','tags']]
 
-# Lowercase
+#Lowercase
 new_df['tags'] = new_df['tags'].apply(lambda x: x.lower())
 
 print("✅ Data Preprocessing Done")
@@ -71,7 +71,7 @@ def recommend(movie):
     for i in movies_list:
         print(new_df.iloc[i[0]].title)
 
-# Test
+#Testing
 recommend("Avatar")
 
 import pickle
